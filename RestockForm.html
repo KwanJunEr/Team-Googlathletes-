@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" />
+  <style>
+    .narrow {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+
+  <script>
+    // Submit record
+    function SubmitRecord() {
+      document.getElementById("displayReturn").innerHTML = "";
+      var form = {
+        priority: document.getElementById("priority").value,
+        branch: document.getElementById("branch").value,
+        supplier: document.getElementById("supplier").value,
+        product: document.getElementById("product").value,
+        quantity: document.getElementById("quantity").value,
+        status: document.getElementById("status").value,
+        date: document.getElementById("date").value,
+        arrivalDate: document.getElementById("arrivalDate").value,
+        paymentDate: document.getElementById("paymentDate").value,
+        total: document.getElementById("total").value,
+        paymentMethod: document.getElementById("paymentMethod").value,
+        notes: document.getElementById("notes").value
+      };
+      // Check for empty values
+      for (var key in form) {
+        if (form[key] === '' || form[key] === null) {
+          document.getElementById("displayReturn").innerHTML = "All fields are required.";
+          return; // Stop submission if validation fails
+        }
+
+        if (new Date(form.date) > new Date(form.arrivalDate)) {
+          document.getElementById("displayReturn").innerHTML = "Error: The arrival date should be equals or after the order date.";
+          return; // Stop submission if validation fails
+        }
+
+        if (new Date(form.date) > new Date(form.paymentDate)) {
+          document.getElementById("displayReturn").innerHTML = "Error: The payment date should be equals or after the order date.";
+          return; // Stop submission if validation fails
+        }
+      }
+      // Log restock
+      google.script.run.withSuccessHandler(returnBack).logRestockData(form);
+    }
+
+    // Return back
+    function returnBack(response) {
+      document.getElementById("displayReturn").innerHTML = response;
+      document.querySelector("form").reset();
+    }
+
+    function populateDropbox(id, options) {
+      var dropbox = document.getElementById(id);
+      dropbox.innerHTML = '';
+      options.forEach(function(item) {
+        let option = document.createElement("option");
+          option.value = item;
+          option.text = item;
+          dropbox.appendChild(option);
+      });
+    }
+
+    // Populate branch dropbox
+    function GetBranches() {
+      google.script.run.withSuccessHandler(function(ar) {
+        populateDropbox("branch", ar);
+      }).fetchBranches();
+    }
+
+    // Populate prority dropbox
+    function GetPriorities() {
+      google.script.run.withSuccessHandler(function(ar) {
+        populateDropbox("priority", ar);
+      }).fetchPriorities();
+    }
+
+    // Populate status dropbox
+    function GetStatuses() {
+      google.script.run.withSuccessHandler(function(ar) {
+        populateDropbox("status", ar);
+      }).fetchRestockStatuses();
+    }
+
+    // Populate payment method dropbox
+    function GetPaymentMethods() {
+      google.script.run.withSuccessHandler(function(ar) {
+        populateDropbox("paymentMethod", ar);
+      }).fetchRestockPaymentMethods();
+    }
+
+    // Populate suppliers datalist
+    function GetSuppliers() {
+      google.script.run.withSuccessHandler(function(ar) {
+      populateDropbox("supplier", ar);
+      }).fetchSuppliers();
+    }
+
+    // Populate products datalist
+    function GetProducts() {
+      google.script.run.withSuccessHandler(function(ar) {
+      populateDropbox("product", ar);
+      }).fetchProducts();
+    }
+  </script>
+</head>
+
+<body>
+  <form>
+    <div style="padding: 10px">
+
+      <!-- Priority field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="priority" style="margin-bottom: 0rem">Priority</label>
+          <select id="priority" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Branch field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="branch" style="margin-bottom: 0rem">Branch</label>
+          <select id="branch" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Supplier field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="supplier" style="margin-bottom: 0rem">Supplier</label>
+          <select id="supplier" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Product field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="product" style="margin-bottom: 0rem">Product</label>
+          <select id="product" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Quantity field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="quantity" style="margin-bottom: 0rem">Quantity</label>
+          <input type="number" id="quantity" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Status field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="status" style="margin-bottom: 0rem">Status</label>
+          <select id="status" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Date field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="date" style="margin-bottom: 0rem">Date</label>
+          <input type="date" id="date" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Arrival date field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="arrivalDate" style="margin-bottom: 0rem">Arrival Date</label>
+          <input type="date" id="arrivalDate" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Payment date field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="paymentDate" style="margin-bottom: 0rem">Payment Date</label>
+          <input type="date" id="paymentDate" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Total field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="total" style="margin-bottom: 0rem">Total (RM)</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">RM</span>
+            </div>
+            <input type="number" id="total" step="0.01" class="form-control" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment method field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="paymentMethod" style="margin-bottom: 0rem">Payment Method</label>
+          <select id="paymentMethod" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Notes field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="notes" style="margin-bottom: 0rem">Notes</label>
+          <textarea id="notes" class="form-control" rows="5"></textarea>
+        </div>
+      </div>
+
+      <!-- Submit button -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <input type="button" value="Submit" onclick="SubmitRecord()" class="btn btn-primary" />
+        </div>
+      </div>
+  </form>
+  <div id="displayReturn"></div>
+  </div>
+  <script>
+    GetBranches();
+    GetPriorities();
+    GetStatuses();
+    GetPaymentMethods();
+    GetSuppliers();
+    GetProducts();
+  </script>
+</body>
+
+</html>
