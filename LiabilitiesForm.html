@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" />
+  <style>
+    .narrow {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+
+  <script>
+    // Submit record
+    function SubmitRecord() {
+      document.getElementById("displayReturn").innerHTML = "";
+      var isTaxable = document.getElementById("taxable").checked;
+
+      var form = {
+        name: document.getElementById("name").value,
+        account: document.getElementById("account").value,
+        creditor: document.getElementById("creditor").value,
+        category: document.getElementById("category").value,
+        initialAmount: document.getElementById("initialAmount").value,
+        currentBalance: document.getElementById("currentBalance").value,
+        interestRate: document.getElementById("interestRate").value,
+        frequency: document.getElementById("frequency").value,
+        minPayment: document.getElementById("minPayment").value,
+        dueDate: document.getElementById("dueDate").value,
+        lastPayment: document.getElementById("lastPayment").value,
+        lastPaymentAmount: document.getElementById("lastPaymentAmount").value,
+        nextPaymentAmount: document.getElementById("nextPaymentAmount").value,
+        startDate: document.getElementById("startDate").value,
+        maturityDate: document.getElementById("maturityDate").value,
+        currency: document.getElementById("currency").value,
+        taxable: isTaxable,
+        notes: document.getElementById("notes").value,
+        status: document.getElementById("status").value
+      };
+      // Check for empty values
+      for (var key in form) {
+        if (form[key] === '' || form[key] === null) {
+          document.getElementById("displayReturn").innerHTML = "All fields are required.";
+          return; // Stop submission if validation fails
+        }
+      }
+      // Log liabilities data
+      google.script.run.withSuccessHandler(returnBack).logLiabilitiesData(form);
+    }
+
+    // Return back
+    function returnBack(response) {
+      document.getElementById("displayReturn").innerHTML = response;
+      document.querySelector("form").reset();
+    }
+
+    function populateDropbox(id, options) {
+      var dropbox = document.getElementById(id);
+      dropbox.innerHTML = '';
+      options.forEach(function(item) {
+        let option = document.createElement("option");
+          option.value = item;
+          option.text = item;
+          dropbox.appendChild(option);
+      });
+    }
+
+    // Populate category dropbox
+    function GetCategories() {
+      google.script.run.withSuccessHandler(function(ar) {
+        populateDropbox("category", ar);
+      }).fetchLiabilityCategories();
+    }
+
+    // Populate frequency dropbox
+    function GetFrequencies() {
+      google.script.run.withSuccessHandler(function(ar) {
+        populateDropbox("frequency", ar);
+      }).fetchLiabilityFrequency();
+    }
+
+    // Populate frequency dropbox
+    function GetStatuses() {
+      google.script.run.withSuccessHandler(function(ar) {
+        populateDropbox("status", ar);
+      }).fetchLiabilityStatuses();
+    }
+  </script>
+</head>
+
+<body>
+  <form>
+    <div style="padding: 10px">
+
+      <!-- Name field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="name" style="margin-bottom: 0rem">Name</label>
+          <input type="text" id="name" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Account field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="account" style="margin-bottom: 0rem">Account</label>
+          <input type="number" id="account" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Creditor field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="creditor" style="margin-bottom: 0rem">Creditor</label>
+          <input type="text" id="creditor" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Category field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="category" style="margin-bottom: 0rem">Category</label>
+          <select id="category" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Initial amount field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="initialAmount" style="margin-bottom: 0rem">Initial Amount</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">RM</span>
+            </div>
+            <input type="number" id="initialAmount" step="0.01" class="form-control" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Current balance field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="currentBalance" style="margin-bottom: 0rem">Current Balance</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">RM</span>
+            </div>
+            <input type="number" id="currentBalance" step="0.01" class="form-control" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Interest rate field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="interestRate" style="margin-bottom: 0rem">Interest Rate</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">%</span>
+            </div>
+            <input type="number" id="interestRate" step="0.01" class="form-control" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Frequency field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="frequency" style="margin-bottom: 0rem">Frequency</label>
+          <select id="frequency" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Min payment field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="minPayment" style="margin-bottom: 0rem">Min Payment</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">RM</span>
+            </div>
+            <input type="number" id="minPayment" step="0.01" class="form-control" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Due date field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="dueDate" style="margin-bottom: 0rem">Due Date</label>
+          <input type="date" id="dueDate" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Last payment field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="lastPayment" style="margin-bottom: 0rem">Last Payment</label>
+          <input type="date" id="lastPayment" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Last payment amount field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="lastPaymentAmount" style="margin-bottom: 0rem">Last Payment Amount</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">RM</span>
+            </div>
+            <input type="number" id="lastPaymentAmount" step="0.01" class="form-control" required />
+          </div>
+        </div>
+      </div>
+      
+      <!-- Next payment amount field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="nextPaymentAmount" style="margin-bottom: 0rem">Next Payment Amount</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">RM</span>
+            </div>
+            <input type="number" id="nextPaymentAmount" step="0.01" class="form-control" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Start date field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="startDate" style="margin-bottom: 0rem">Start Date</label>
+          <input type="date" id="startDate" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Maturity date field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="maturityDate" style="margin-bottom: 0rem">Maturity Date</label>
+          <input type="date" id="maturityDate" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Currency field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="currency" style="margin-bottom: 0rem">Currency</label>
+          <input type="text" id="currency" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Taxable field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="taxable" style="margin-bottom: 0rem">Taxable</label>
+          <input type="checkbox" id="taxable" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Notes field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="notes" style="margin-bottom: 0rem">Notes</label>
+          <textarea id="notes" class="form-control" rows="5"></textarea>
+        </div>
+      </div>
+
+      <!-- Status field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="status" style="margin-bottom: 0rem">Status</label>
+          <select id="status" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Submit button -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <input type="button" value="Submit" onclick="SubmitRecord()" class="btn btn-primary" />
+        </div>
+      </div>
+  </form>
+  <div id="displayReturn"></div>
+  </div>
+  <script>
+    GetCategories();
+    GetFrequencies();
+    GetStatuses();
+  </script>
+</body>
+
+</html>
