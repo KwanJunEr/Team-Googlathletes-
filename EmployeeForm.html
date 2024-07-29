@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" />
+  <style>
+    .narrow {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+
+  <script>
+    // Submit record
+    function SubmitRecord() {
+      document.getElementById("displayReturn").innerHTML = "";
+      var form = {
+        name: document.getElementById("name").value,
+        branch: document.getElementById("branch").value,
+        status: document.getElementById("status").value,
+        jobTitle: document.getElementById("jobTitle").value,
+        department: document.getElementById("department").value,
+        salary: document.getElementById("salary").value,
+        address: document.getElementById("address").value,
+        contactNumber: document.getElementById("contactNumber").value,
+        email: document.getElementById("email").value,
+        birthDate: document.getElementById("birthDate").value,
+        joiningDate: document.getElementById("joiningDate").value,
+        exitDate: document.getElementById("exitDate").value,
+        bankAccount: document.getElementById("bankAccount").value,
+        epf: document.getElementById("epf").value,
+        socso: document.getElementById("socso").value
+      };
+      // Check for empty values
+      for (var key in form) {
+        if (form[key] === '' || form[key] === null) {
+          document.getElementById("displayReturn").innerHTML = "All fields are required.";
+          return; // Stop submission if validation fails
+        }
+
+        // Check date logic
+        if (new Date(form.joiningDate) >= new Date(form.exitDate)) {
+          document.getElementById("displayReturn").innerHTML = "Error: The joining date should be before the exit date.";
+          return; // Stop submission if validation fails
+        }
+      }
+      // Log employee data
+      google.script.run.withSuccessHandler(returnBack).logEmployeeData(form);
+    }
+
+    // Return back
+    function returnBack(response) {
+      document.getElementById("displayReturn").innerHTML = response;
+      document.querySelector("form").reset();
+    }
+
+    function populateDropbox(id, options) {
+      var dropbox = document.getElementById(id);
+      dropbox.innerHTML = '';
+      options.forEach(function(item) {
+        let option = document.createElement("option");
+          option.value = item;
+          option.text = item;
+          dropbox.appendChild(option);
+      });
+    }
+
+    // Populate branch dropbox
+    function GetBranches() {
+      google.script.run.withSuccessHandler(function(ar) {
+        populateDropbox("branch", ar);
+      }).fetchBranches();
+    }
+
+    // Populate status dropbox
+    function GetStatuses() {
+      google.script.run.withSuccessHandler(function(ar) {
+        populateDropbox("status", ar);
+      }).fetchEmployeeStatuses();
+    }
+
+    // Populate job title dropbox
+    function GetJobTitles() {
+      google.script.run.withSuccessHandler(function(ar) {
+        populateDropbox("jobTitle", ar);
+      }).fetchJobTitles();
+    }
+
+    // Populate department dropbox
+    function GetDepartments() {
+      google.script.run.withSuccessHandler(function(ar) {
+        populateDropbox("department", ar);
+      }).fetchDepartments();
+    }
+  </script>
+</head>
+
+<body>
+  <form>
+    <div style="padding: 10px">
+
+      <!-- Name field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="name" style="margin-bottom: 0rem">Name</label>
+          <input type="text" id="name" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Branch field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="branch" style="margin-bottom: 0rem">Branch</label>
+          <select id="branch" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Status field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="status" style="margin-bottom: 0rem">Status</label>
+          <select id="status" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Job title field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="jobTitle" style="margin-bottom: 0rem">Job Title</label>
+          <select id="jobTitle" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Department field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="department" style="margin-bottom: 0rem">Department</label>
+          <select id="department" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Salary field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="salary" style="margin-bottom: 0rem">Salary</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">RM</span>
+            </div>
+            <input type="number" id="salary" step="0.01" class="form-control" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Address field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="address" style="margin-bottom: 0rem">Address</label>
+          <input type="text" id="address" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Contact number field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="contactNumber" style="margin-bottom: 0rem">Contact Number</label>
+          <input type="text" id="contactNumber" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Email field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="email" style="margin-bottom: 0rem">Email</label>
+          <input type="email" id="email" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Birth date field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="birthDate" style="margin-bottom: 0rem">Birth Date</label>
+          <input type="date" id="birthDate" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Joining date field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="joiningDate" style="margin-bottom: 0rem">Joining Date</label>
+          <input type="date" id="joiningDate" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Exit date field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="exitDate" style="margin-bottom: 0rem">Exit Date</label>
+          <input type="date" id="exitDate" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Bank account field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="bankAccount" style="margin-bottom: 0rem">Bank Account</label>
+          <input type="number" id="bankAccount" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- EPF field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="epf" style="margin-bottom: 0rem">EPF</label>
+          <input type="number" id="epf" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- SOCSO field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="socso" style="margin-bottom: 0rem">SOCSO</label>
+          <input type="number" id="socso" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Submit button -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <input type="button" value="Submit" onclick="SubmitRecord()" class="btn btn-primary" />
+        </div>
+      </div>
+  </form>
+  <div id="displayReturn"></div>
+  </div>
+  <script>
+    GetBranches();
+    GetStatuses();
+    GetDepartments();
+    GetJobTitles();
+  </script>
+</body>
+
+</html>
