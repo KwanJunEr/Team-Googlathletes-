@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" />
+  <style>
+    .narrow {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+
+  <script>
+    // Submit record
+    function SubmitRecord() {
+      document.getElementById("displayReturn").innerHTML = "";
+      var form = {
+        name: document.getElementById("name").value,
+        contactNumber: document.getElementById("contactNumber").value,
+        email: document.getElementById("email").value,
+      };
+      // Check for empty values
+      for (var key in form) {
+        if (form[key] === '' || form[key] === null) {
+          document.getElementById("displayReturn").innerHTML = "All fields are required.";
+          return; // Stop submission if validation fails
+        }
+      }
+      // Log employee data
+      google.script.run.withSuccessHandler(returnBack).logCustomerData(form);
+    }
+
+    // Return back
+    function returnBack(response) {
+      document.getElementById("displayReturn").innerHTML = response;
+      document.querySelector("form").reset();
+    }
+  </script>
+</head>
+
+<body>
+  <form>
+    <div style="padding: 10px">
+
+      <!-- Name field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="name" style="margin-bottom: 0rem">Name</label>
+          <input type="text" id="name" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Contact number field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="contactNumber" style="margin-bottom: 0rem">Contact Number</label>
+          <input type="text" id="contactNumber" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Email field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="email" style="margin-bottom: 0rem">Email</label>
+          <input type="email" id="email" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Submit button -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <input type="button" value="Submit" onclick="SubmitRecord()" class="btn btn-primary" />
+        </div>
+      </div>
+  </form>
+  <div id="displayReturn"></div>
+  </div>
+  <script>
+  </script>
+</body>
+
+</html>
