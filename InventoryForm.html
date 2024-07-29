@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" />
+  <style>
+    .narrow {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+
+  <script>
+    // Submit record
+    function SubmitRecord() {
+      document.getElementById("displayReturn").innerHTML = "";
+      var form = {
+        name: document.getElementById("name").value,
+        category: document.getElementById("category").value,
+        quantity: document.getElementById("quantity").value,
+        sellingPrice: document.getElementById("sellingPrice").value,
+        unitCost: document.getElementById("unitCost").value,
+        notes: document.getElementById("notes").value
+      };
+      // Check for empty values
+      for (var key in form) {
+        if (form[key] === '' || form[key] === null) {
+          document.getElementById("displayReturn").innerHTML = "All fields are required.";
+          return; // Stop submission if validation fails
+        }
+      }
+      // Log sales
+      google.script.run.withSuccessHandler(returnBack).logInventoryData(form);
+    }
+
+    // Return back
+    function returnBack(response) {
+      document.getElementById("displayReturn").innerHTML = response;
+      document.querySelector("form").reset();
+    }
+
+    // Populate categories dropdown
+    function GetCategories() {
+      google.script.run.withSuccessHandler(function(ar) {
+        var category = document.getElementById("category");
+        console.log(ar);
+        category.innerHTML = '';
+        ar.forEach(function(item) {
+          let option = document.createElement("option");
+          option.value = item;
+          option.text = item;
+          category.appendChild(option);
+        });
+      }).fetchProductCategories();
+    }
+  </script>
+</head>
+
+<body>
+  <form>
+    <div style="padding: 10px">
+
+      <!-- Name field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="name" style="margin-bottom: 0rem">Name</label>
+          <input type="text" id="name" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Category field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="category" style="margin-bottom: 0rem">Category</label>
+          <select id="category" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Quantity field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="quantity" style="margin-bottom: 0rem">Quantity</label>
+          <input type="number" id="quantity" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Selling price field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="sellingPrice" style="margin-bottom: 0rem">Selling Price</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">RM</span>
+            </div>
+            <input type="number" id="sellingPrice" step="0.01" class="form-control" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Unit cost field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="unitCost" style="margin-bottom: 0rem">Unit Cost</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">RM</span>
+            </div>
+            <input type="number" id="unitCost" step="0.01" class="form-control" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="notes" style="margin-bottom: 0rem">Notes</label>
+          <textarea id="notes" class="form-control" rows="5"></textarea>
+        </div>
+      </div>
+
+      <!-- Submit button -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <input type="button" value="Submit" onclick="SubmitRecord()" class="btn btn-primary" />
+        </div>
+      </div>
+  </form>
+  <div id="displayReturn"></div>
+  </div>
+  <script>
+    GetCategories();
+  </script>
+</body>
+
+</html>
