@@ -1,6 +1,6 @@
 # Team-Googlathletes-
 
-GoogleSheet Link: https://docs.google.com/spreadsheets/d/1YKKVAU1mMJmlVLMwu4OjyESlj_uq_2ZxokA4P4D2qHg/edit?usp=sharing
+GoogleSheet and Appscript Link: https://docs.google.com/spreadsheets/d/1YKKVAU1mMJmlVLMwu4OjyESlj_uq_2ZxokA4P4D2qHg/edit?usp=sharing
 
 <hr>
 
