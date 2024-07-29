@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" />
+  <style>
+    .narrow {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+
+  <script>
+    // Submit record
+    function SubmitRecord() {
+      document.getElementById("displayReturn").innerHTML = "";
+
+      var form = {
+        name: document.getElementById("name").value,
+        date: document.getElementById("date").value,
+        category: document.getElementById("category").value,
+        description: document.getElementById("description").value,
+        operatingExpense: document.getElementById("operatingExpense").value,
+        capitalExpenditure: document.getElementById("capitalExpenditure").value,
+        total: document.getElementById("total").value,
+      };
+      // Check for empty values
+      for (var key in form) {
+        if (form[key] === '' || form[key] === null) {
+          document.getElementById("displayReturn").innerHTML = "All fields are required.";
+          return; // Stop submission if validation fails
+        }
+      }
+      // Log liabilities data
+      google.script.run.withSuccessHandler(returnBack).logExpensesData(form);
+    }
+
+    // Return back
+    function returnBack(response) {
+      document.getElementById("displayReturn").innerHTML = response;
+      document.querySelector("form").reset();
+    }
+
+    function populateDropbox(id, options) {
+      var dropbox = document.getElementById(id);
+      dropbox.innerHTML = '';
+      options.forEach(function(item) {
+        let option = document.createElement("option");
+          option.value = item;
+          option.text = item;
+          dropbox.appendChild(option);
+      });
+    }
+
+    // Populate category dropbox
+    function GetCategories() {
+      google.script.run.withSuccessHandler(function(ar) {
+        populateDropbox("category", ar);
+      }).fetchExpensesCategories();
+    }
+  </script>
+</head>
+
+<body>
+  <form>
+    <div style="padding: 10px">
+
+      <!-- Name field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="name" style="margin-bottom: 0rem">Name</label>
+          <input type="text" id="name" class="form-control" />
+        </div>
+      </div>
+
+      <!-- Date field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="date" style="margin-bottom: 0rem">Date</label>
+          <input type="date" id="date" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Category field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="category" style="margin-bottom: 0rem">Category</label>
+          <select id="category" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Description field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="description" style="margin-bottom: 0rem">Description</label>
+          <textarea id="description" class="form-control" rows="5"></textarea>
+        </div>
+      </div>
+
+      <!-- Operating expense field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="operatingExpense" style="margin-bottom: 0rem">Operating Expense?</label>
+          <select id="operatingExpense" class="form-control" required>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Capital expenditure field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="capitalExpenditure" style="margin-bottom: 0rem">Capital Expenditure?</label>
+          <select id="capitalExpenditure" class="form-control" required>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Total field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="total" style="margin-bottom: 0rem">Total</label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">RM</span>
+            </div>
+            <input type="number" id="total" step="0.01" class="form-control" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit button -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <input type="button" value="Submit" onclick="SubmitRecord()" class="btn btn-primary" />
+        </div>
+      </div>
+  </form>
+  <div id="displayReturn"></div>
+  </div>
+  <script>
+    GetCategories();
+  </script>
+</body>
+
+</html>
