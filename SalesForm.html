@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" />
+  <style>
+    .narrow {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+
+  <script>
+    // Submit record
+    function SubmitRecord() {
+      document.getElementById("displayReturn").innerHTML = "";
+      var form = {
+        priority: document.getElementById("priority").value,
+        branch: document.getElementById("branch").value,
+        customer: document.getElementById("customer").value,
+        date: document.getElementById("date").value,
+        time: document.getElementById("time").value,
+        paymentDate: document.getElementById("paymentDate").value,
+        status: document.getElementById("status").value,
+        salesChannel: document.getElementById("salesChannel").value,
+        paymentMethod: document.getElementById("paymentMethod").value,
+        notes: document.getElementById("notes").value,
+        products: []
+      };
+
+      var productRows = document.querySelectorAll('.product-row');
+      productRows.forEach(function (row) {
+        var product = {
+          product: row.querySelector('.product').value,
+          quantity: row.querySelector('.quantity').value
+        };
+        form.products.push(product);
+      });
+
+      // Check for empty values
+      for (var key in form) {
+        if (form[key] === '' || form[key] === null) {
+          document.getElementById("displayReturn").innerHTML = "All fields are required.";
+          return; // Stop submission if validation fails
+        }
+      }
+
+      form.products.forEach(function (product) {
+        if (product.product === '' || product.quantity === '') {
+          document.getElementById("displayReturn").innerHTML = "All fields are required.";
+          return; // Stop submission if validation fails
+        }
+      });
+
+      if (new Date(form.date) > new Date(form.paymentDate)) {
+        document.getElementById("displayReturn").innerHTML = "Payment date should be after or on the sales date";
+        return; // Stop submission if validation fails
+      }
+
+      // Log sales
+      google.script.run.withSuccessHandler(returnBack).logSaleData(form);
+    }
+
+    // Return back
+    function returnBack(response) {
+      document.getElementById("displayReturn").innerHTML = response;
+      document.querySelector("form").reset();
+    }
+
+    function populateDropbox(id, options) {
+      var dropbox = document.getElementById(id);
+      dropbox.innerHTML = '';
+      options.forEach(function (item) {
+        let option = document.createElement("option");
+        option.value = item;
+        option.text = item;
+        dropbox.appendChild(option);
+      });
+    }
+
+    function populateDatalist(id, options) {
+      var datalist = document.getElementById(id);
+      datalist.innerHTML = '';
+      options.forEach(function (item) {
+        var option = document.createElement("option");
+        option.value = item;
+        datalist.appendChild(option);
+      });
+    }
+
+    // Populate branch dropbox
+    function GetBranches() {
+      google.script.run.withSuccessHandler(function (ar) {
+        populateDropbox("branch", ar);
+      }).fetchBranches();
+    }
+
+    // Populate priority dropbox
+    function GetPriorities() {
+      google.script.run.withSuccessHandler(function (ar) {
+        populateDropbox("priority", ar);
+      }).fetchPriorities();
+    }
+
+    // Populate status dropbox
+    function GetStatuses() {
+      google.script.run.withSuccessHandler(function (ar) {
+        populateDropbox("status", ar);
+      }).fetchSalesStatuses();
+    }
+
+    // Populate sales channel dropbox
+    function GetSalesChannels() {
+      google.script.run.withSuccessHandler(function (ar) {
+        populateDropbox("salesChannel", ar);
+      }).fetchSalesChannels();
+    }
+
+    // Populate payment method dropbox
+    function GetPaymentMethods() {
+      google.script.run.withSuccessHandler(function (ar) {
+        populateDropbox("paymentMethod", ar);
+      }).fetchPaymentMethods();
+    }
+
+    // Populate customers datalist
+    function GetCustomers() {
+      google.script.run.withSuccessHandler(function (ar) {
+        populateDatalist("customerDatalist", ar);
+      }).fetchCustomers();
+    }
+
+    // Populate products dropdown
+    function GetProducts(id) {
+      google.script.run.withSuccessHandler(function (ar) {
+        populateDropbox(id, ar);
+      }).fetchProducts();
+    }
+
+    // Add new product row
+    function addProductRow() {
+      var productTemplate = document.querySelector('.product-template');
+      var newProductRow = productTemplate.cloneNode(true);
+      newProductRow.classList.remove('product-template');
+      newProductRow.classList.add('product-row');
+      newProductRow.style.display = '';
+      var productSelect = newProductRow.querySelector('.product');
+      productSelect.id = 'product' + document.querySelectorAll('.product-row').length;
+      document.getElementById('product-container').appendChild(newProductRow);
+      GetProducts(productSelect.id); // Populate the new product select
+    }
+
+    function removeProductRow() {
+      var container = document.getElementById('product-container');
+      var rows = container.querySelectorAll('.product-row');
+      if (rows.length > 1) {
+        container.removeChild(rows[rows.length - 1]);
+      }
+    }
+
+    // Maximum length for quantity is only 999 per order
+    function enforceMaxLength(event) {
+      const input = event.target;
+      if (input.value.length > 3) {
+        input.value = input.value.slice(0, 3);
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <form>
+    <div style="padding: 10px">
+      <div class="form-row">
+
+        <!-- Priority field -->
+        <div class="form-group col-md-6 narrow">
+          <label for="priority" style="margin-bottom: 0rem">Priority</label>
+          <select id="priority" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Branch field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="branch" style="margin-bottom: 0rem">Branch</label>
+          <select id="branch" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Customer field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="customer" style="margin-bottom: 0rem">Customer</label>
+          <input id="customer" class="form-control" list="customerDatalist" required />
+          <datalist id="customerDatalist"></datalist>
+        </div>
+      </div>
+
+      <!-- Date field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="date" style="margin-bottom: 0rem">Date</label>
+          <input type="date" id="date" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Time field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="time" style="margin-bottom: 0rem">Time</label>
+          <input type="time" id="time" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Payment date field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="paymentDate" style="margin-bottom: 0rem">Payment Date</label>
+          <input type="date" id="paymentDate" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Status field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="status" style="margin-bottom: 0rem">Status</label>
+          <select id="status" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Sales channel field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="salesChannel" style="margin-bottom: 0rem">Sales Channel</label>
+          <select id="salesChannel" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Product container field -->
+      <div id="product-container">
+        <div class="form-row product-template" style="display: none;">
+          <div class="form-group col-md-6 narrow">
+            <label for="product" style="margin-bottom: 0rem">Product</label>
+            <select class="product form-control" required></select>
+          </div>
+          <div class="form-group col-md-6 narrow">
+            <label for="quantity" style="margin-bottom: 0rem">Quantity</label>
+            <input type="number" class="quantity form-control" max="999" required oninput="enforceMaxLength(event)" />
+          </div>
+        </div>
+        <div class="form-row product-row">
+          <div class="form-group col-md-6 narrow">
+            <label for="product" style="margin-bottom: 0rem">Product</label>
+            <select class="product form-control" id="product0" required></select>
+          </div>
+          <div class="form-group col-md-6 narrow">
+            <label for="quantity" style="margin-bottom: 0rem">Quantity</label>
+            <input type="number" class="quantity form-control" max="999" required oninput="enforceMaxLength(event)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Product buttons field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <input type="button" value="Add Product" onclick="addProductRow()" class="btn btn-secondary" />
+          <button type="button" class="btn btn-danger" onclick="removeProductRow()">Remove Product</button>
+        </div>
+      </div>
+
+      <!-- Payment method field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="paymentMethod" style="margin-bottom: 0rem">Payment Method</label>
+          <select id="paymentMethod" class="form-control" required></select>
+        </div>
+      </div>
+
+      <!-- Notes field -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <label for="notes" style="margin-bottom: 0rem">Notes</label>
+          <textarea id="notes" class="form-control" rows="5"></textarea>
+        </div>
+      </div>
+
+      <!-- Submit button -->
+      <div class="form-row">
+        <div class="form-group col-md-6 narrow">
+          <input type="button" value="Submit" onclick="SubmitRecord()" class="btn btn-primary" />
+        </div>
+      </div>
+  </form>
+  <div id="displayReturn"></div>
+  </div>
+  <script>
+    GetPriorities();
+    GetBranches();
+    GetCustomers();
+    GetStatuses();
+    GetSalesChannels();
+    GetProducts('product0');
+    GetPaymentMethods();
+  </script>
+</body>
+
+</html>
